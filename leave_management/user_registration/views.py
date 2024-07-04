@@ -1,5 +1,4 @@
 # from django 
-from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 
 # from rest_framework
@@ -10,11 +9,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # from models and serializer
-from .models import User, Token, Role
+from .models import Token, Role
 from user_registration.serializer import UserRegistrationSerializer, LoginSerializer, TokenSerializer, RoleSerializer
 
 # from jwt authorization and utils files 
 from leave_management.jwt_authorization import JWTAuthorization
+from leave_management.utils import handle_exceptions
+from leave_management.renderers import UserRenderer
 
 # Create your views here.
 
@@ -26,8 +27,12 @@ def get_tokens_for_user(user):
         'access': str(refresh.access_token),
     }
 
+
 class UserView(APIView):
 
+    renderer_classes = [UserRenderer]
+    
+    @handle_exceptions()
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -37,6 +42,9 @@ class UserView(APIView):
 
 class LoginView(APIView):
 
+    renderer_classes = [UserRenderer]
+
+    @handle_exceptions()
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
 
@@ -60,8 +68,10 @@ class LoginView(APIView):
 
 class RoleView(APIView):
 
+    renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization]
-
+    
+    @handle_exceptions()
     def post(self, request):
 
         if not request.user.role.name == "admin" and  not request.user.role.name == "HR" :
@@ -71,7 +81,8 @@ class RoleView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Role created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
-       
+
+    @handle_exceptions()   
     def put(self, request, id):
 
         role = Role.objects.filter(id=id, status=True)
@@ -85,7 +96,8 @@ class RoleView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Role updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
-                         
+
+    @handle_exceptions()                  
     def delete(self, request, id):
         role = Role.objects.filter(id=id, status=True)
         if not role:

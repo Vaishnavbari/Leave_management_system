@@ -14,12 +14,16 @@ from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSer
 # from jwt authorization and utils files 
 from leave_management.jwt_authorization import JWTAuthorization
 from leave_management.permission import check_permission
+from leave_management.renderers import UserRenderer
+from leave_management.utils import handle_exceptions
 
 
 class LeaveTypeView(APIView):
 
+    renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization]
-
+    
+    @handle_exceptions()
     def post(self, request):
 
         user_access = check_permission(request.user)
@@ -32,6 +36,7 @@ class LeaveTypeView(APIView):
         serializer.save()
         return Response({"message":"Leave type created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
     
+    @handle_exceptions()
     def put(self, request, id):
 
         leave_type_data = LeaveType.objects.filter(id=id, status=True)
@@ -47,7 +52,8 @@ class LeaveTypeView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Leave type updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
-                         
+    
+    @handle_exceptions()
     def delete(self, request, id):
         leave_type_data = LeaveType.objects.filter(id=id, status=True)
         if not leave_type_data:
@@ -63,9 +69,11 @@ class LeaveTypeView(APIView):
     
 
 class LeaveRuleView(APIView):
-
+    
+    renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization]
-
+    
+    @handle_exceptions()
     def post(self, request):
 
         user_access = check_permission(request.user)
@@ -78,6 +86,7 @@ class LeaveRuleView(APIView):
         serializer.save()
         return Response({"message":"Leave rule created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
     
+    @handle_exceptions()
     def put(self, request, id):
 
         leave_rule_data = LeaveRule.objects.filter(id=id, status=True)
@@ -93,7 +102,8 @@ class LeaveRuleView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Leave rule updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
-                         
+
+    @handle_exceptions()                     
     def delete(self, request, id):
         leave_rule_data = LeaveRule.objects.filter(id=id, status=True)
         if not leave_rule_data:
@@ -109,15 +119,18 @@ class LeaveRuleView(APIView):
     
 
 class LeaveView(APIView):
-
+    
+    renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization]
-
+    
+    @handle_exceptions()
     def post(self, request):
         serializer = LeaveSerializer(data=request.data, context={"user":request.user})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Leave applied successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
     
+    @handle_exceptions()
     def put(self, request, id):
 
         leave_data = Leave.objects.filter(id=id, user=request.user.id, status=True)
@@ -128,7 +141,8 @@ class LeaveView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message":"Leave updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
-                         
+
+    @handle_exceptions()                     
     def delete(self, request, id):
         leave_data = Leave.objects.filter(id=id, status=True)
         if not leave_data:
