@@ -77,11 +77,11 @@ class LeaveSerializer(serializers.ModelSerializer):
        date_from = validated_data.get("date_from")
        date_to = validated_data.get("date_to")
 
-       if self.instance:
-           date_from = validated_data.get("date_from") if validated_data.get("date_from") else self.instance.date_from 
-           date_to = validated_data.get("date_to") if validated_data.get("date_to") else self.instance.date_to
-           leave_type = validated_data.get("leave_type") if validated_data.get("leave_type") else self.instance.leave_type
-           reason = validated_data.get("reason") if validated_data.get("reason") else self.instance.reason
+    #    if self.instance:
+    #        date_from = validated_data.get("date_from") if validated_data.get("date_from") else self.instance.date_from 
+    #        date_to = validated_data.get("date_to") if validated_data.get("date_to") else self.instance.date_to
+    #        leave_type = validated_data.get("leave_type") if validated_data.get("leave_type") else self.instance.leave_type
+    #        reason = validated_data.get("reason") if validated_data.get("reason") else self.instance.reason
          
        if date_from <= datetime.now().date():
            raise serializers.ValidationError("Date-from should be greater than today's date")
@@ -114,10 +114,10 @@ class LeaveSerializer(serializers.ModelSerializer):
        leave = Leave.objects.create(leave_type=leave_type, date_from=date_from, date_to=date_to, reason=reason, user=user)
        return leave
    
-   def update(self, instance, validated_data):
-        instance.leave_type = validated_data.get("leave_type", instance.leave_type)
-        instance.date_from = validated_data.get("date_from", instance.date_from)
-        instance.date_to = validated_data.get("date_to", instance.date_to)
-        instance.reason = validated_data.get("reason", instance.reason)
-        instance.save()
-        return instance
+#    def update(self, instance, validated_data):
+#         instance.leave_type = validated_data.get("leave_type", instance.leave_type)
+#         instance.date_from = validated_data.get("date_from", instance.date_from)
+#         instance.date_to = validated_data.get("date_to", instance.date_to)
+#         instance.reason = validated_data.get("reason", instance.reason)
+#         instance.save()
+#         return instance

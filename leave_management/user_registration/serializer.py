@@ -61,7 +61,7 @@ class RoleSerializer(serializers.ModelSerializer):
         return super().validate(validated_data)
 
     def create(self, validated_data):
-        return Role.objects.create(name= validated_data.get("name"))
+        return Role.objects.create(name=validated_data.get("name"))
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get("name") if validated_data.get("name") else instance.name

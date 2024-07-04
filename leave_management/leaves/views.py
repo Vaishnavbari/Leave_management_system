@@ -130,17 +130,17 @@ class LeaveView(APIView):
         serializer.save()
         return Response({"message":"Leave applied successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
     
-    @handle_exceptions()
-    def put(self, request, id):
+    # @handle_exceptions()
+    # def put(self, request, id):
 
-        leave_data = Leave.objects.filter(id=id, user=request.user.id, status=True)
-        if not leave_data:
-            return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)      
+    #     leave_data = Leave.objects.filter(id=id, user=request.user.id, status=True)
+    #     if not leave_data:
+    #         return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)      
         
-        serializer = LeaveSerializer(instance=leave_data.first(), data=request.data, context={"user":request.user}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message":"Leave updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
+    #     serializer = LeaveSerializer(instance=leave_data.first(), data=request.data, context={"user":request.user}, partial=True)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     return Response({"message":"Leave updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
 
     @handle_exceptions()                     
     def delete(self, request, id):
@@ -148,8 +148,10 @@ class LeaveView(APIView):
         if not leave_data:
             return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
-        if not leave_data.first().user == request.user.id and not request.user.role.name == "admin" and  not request.user.role.name == "HR":
-            return Response({"message":"You are not authorized to perform this action", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin delete the leave", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
         
         leave_data.delete()
         return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
