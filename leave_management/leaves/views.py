@@ -8,14 +8,135 @@ from rest_framework.views import APIView
 
 
 # from models and serializer
-from .models import LeaveType
-from leaves.serializer import LeaveTypeSerializer
+from .models import LeaveType, LeaveRule, Leave
+from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSerializer
 
 # from jwt authorization and utils files 
 from leave_management.jwt_authorization import JWTAuthorization
+from leave_management.permission import check_permission
+
 
 class LeaveTypeView(APIView):
 
-    authentication_classes = [JWTAuthorization]
+    permission_classes = [JWTAuthorization]
 
+    def post(self, request):
+
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin created the leave type", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = LeaveTypeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave type created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, id):
+
+        leave_type_data = LeaveType.objects.filter(id=id, status=True)
+        if not leave_type_data:
+            return Response({"message":"Leave type not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin update the leave type", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        serializer = LeaveTypeSerializer(instance=leave_type_data.first(), data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave type updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
+                         
+    def delete(self, request, id):
+        leave_type_data = LeaveType.objects.filter(id=id, status=True)
+        if not leave_type_data:
+            return Response({"message":"leave type not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin delete the leave type", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        leave_type_data.delete()
+        return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
+    
+
+class LeaveRuleView(APIView):
+
+    permission_classes = [JWTAuthorization]
+
+    def post(self, request):
+
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin created the leave rules", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = LeaveRuleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave rule created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, id):
+
+        leave_rule_data = LeaveRule.objects.filter(id=id, status=True)
+        if not leave_rule_data:
+            return Response({"message":"Leave rule not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin update the leave rule", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        serializer = LeaveRuleSerializer(instance=leave_rule_data.first(), data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave rule updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
+                         
+    def delete(self, request, id):
+        leave_rule_data = LeaveRule.objects.filter(id=id, status=True)
+        if not leave_rule_data:
+            return Response({"message":"leave rule not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        user_access = check_permission(request.user)
+
+        if not user_access:
+            return Response({"message":"You are not authorized to perform this action only human resource or admin delete the leave rule", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        leave_rule_data.delete()
+        return Response({"message":"Leave rule deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
+    
+
+class LeaveView(APIView):
+
+    permission_classes = [JWTAuthorization]
+
+    def post(self, request):
+        serializer = LeaveSerializer(data=request.data, context={"user":request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave applied successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
+    
+    def put(self, request, id):
+
+        leave_data = Leave.objects.filter(id=id, user=request.user.id, status=True)
+        if not leave_data:
+            return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)      
+        
+        serializer = LeaveSerializer(instance=leave_data.first(), data=request.data, context={"user":request.user}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message":"Leave updated successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_200_OK)
+                         
+    def delete(self, request, id):
+        leave_data = Leave.objects.filter(id=id, status=True)
+        if not leave_data:
+            return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not leave_data.first().user == request.user.id and not request.user.role.name == "admin" and  not request.user.role.name == "HR":
+            return Response({"message":"You are not authorized to perform this action", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        leave_data.delete()
+        return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
