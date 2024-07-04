@@ -13,5 +13,9 @@ urlpatterns = [
     # Leave
     path("add/user-leave", views.LeaveView.as_view(), name="AddLeave"),
     # path("update/user-leave/<int:id>", views.LeaveView.as_view(), name="Update"),
-    path("delete/user-leave/<int:id>", views.LeaveView.as_view(), name="DeleteLeave")
+    path("delete/user-leave/<int:id>", views.LeaveView.as_view(), name="DeleteLeave"),
+    #  Update status 
+    path("update/leave-rule-status/<int:id>", views.UpdateRuleStatus.as_view(), name="UpdateLiveRuleStatus"),
+    path("update/leave-type-status/<int:id>", views.UpdateLeaveTypeStatus.as_view(), name="UpdateLiveTypeStatus"),
+
 ]

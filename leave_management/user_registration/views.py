@@ -13,9 +13,11 @@ from .models import Token, Role
 from user_registration.serializer import UserRegistrationSerializer, LoginSerializer, TokenSerializer, RoleSerializer
 
 # from jwt authorization and utils files 
-from leave_management.jwt_authorization import JWTAuthorization
+from leave_management.jwt_authorization import JWTAuthorization, CheckPermission
 from leave_management.utils import handle_exceptions
 from leave_management.renderers import UserRenderer
+from datetime import datetime
+from django.apps import apps
 
 # Create your views here.
 
@@ -31,6 +33,7 @@ def get_tokens_for_user(user):
 class UserView(APIView):
 
     renderer_classes = [UserRenderer]
+    permission_classes = [JWTAuthorization, CheckPermission]
     
     @handle_exceptions()
     def post(self, request):
@@ -69,14 +72,10 @@ class LoginView(APIView):
 class RoleView(APIView):
 
     renderer_classes = [UserRenderer]
-    permission_classes = [JWTAuthorization]
+    permission_classes = [JWTAuthorization, CheckPermission]
     
     @handle_exceptions()
     def post(self, request):
-
-        if not request.user.role.name == "admin" and  not request.user.role.name == "HR" :
-            return Response({"message":"You are not authorized to perform this action only human resource or admin created the roles", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
-
         serializer = RoleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -85,12 +84,9 @@ class RoleView(APIView):
     @handle_exceptions()   
     def put(self, request, id):
 
-        role = Role.objects.filter(id=id, status=True)
+        role = Role.objects.filter(id=id, status=True, deleted_at__isnull=True)
         if not role:
             return Response({"message":"Role not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
-        
-        if not request.user.role.name == "admin" and  not request.user.role.name == "HR" :
-            return Response({"message":"You are not authorized to perform this action only human resource or admin updated the roles", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
         
         serializer = RoleSerializer(instance=role.first(), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -99,15 +95,32 @@ class RoleView(APIView):
 
     @handle_exceptions()                  
     def delete(self, request, id):
-        role = Role.objects.filter(id=id, status=True)
+        role = Role.objects.filter(id=id, status=True, deleted_at__isnull=True)
         if not role:
             return Response({"message":"Role not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
-        if not request.user.role.name == "admin" and  not request.user.role.name == "HR" :
-            return Response({"message":"You are not authorized to perform this action only human resource or admin delete the roles", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        role.delete()
+        role.update(deleted_at=datetime.now(), deleted_by=request.user.id)
         return Response({"message":"Role deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
+
+
+class UpdateRoleStatus(APIView):
+
+    renderer_classes = [UserRenderer]
+    permission_classes = [JWTAuthorization, CheckPermission]
+
+    def put(self, request, id):
+
+        role = Role.objects.filter(id=id, deleted_at__isnull=True)
+        if not role:
+            return Response({"message":"Role not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if role.first().status:
+            role.update(status=False)
+        else:
+            role.update(status=True)
+        
+        return Response({"message":"Status updated successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
+        
 
 
 

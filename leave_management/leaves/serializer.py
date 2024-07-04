@@ -34,6 +34,7 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
 
 class LeaveRuleSerializer(serializers.ModelSerializer):
     validity = serializers.IntegerField()
+
     class Meta:
         model = LeaveRule
         fields = ["validity", "leave_type", "role"]
@@ -66,7 +67,8 @@ class LeaveRuleSerializer(serializers.ModelSerializer):
 class LeaveSerializer(serializers.ModelSerializer):
    date_from = serializers.DateField()
    date_to = serializers.DateField()
-   reason = serializers.CharField()   
+   reason = serializers.CharField()
+
    class Meta:
        model = Leave
        fields = ["leave_type", "date_from", "date_to", "reason"]
@@ -86,7 +88,7 @@ class LeaveSerializer(serializers.ModelSerializer):
        if date_from <= datetime.now().date():
            raise serializers.ValidationError("Date-from should be greater than today's date")
        
-       if date_from >= date_to:
+       if date_from > date_to:
            raise serializers.ValidationError("Date-to should be greater than date-from")
        
        # check leave rule validation 

@@ -5,6 +5,8 @@ import jwt
 from django.conf import settings
 from user_registration.models import User, Token
 from django.db.models import Q
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class JWTAuthorization(permissions.BasePermission):
@@ -51,3 +53,19 @@ class JWTAuthorization(permissions.BasePermission):
         request.user = user  # Set the authenticated user in the request
         
         return user is not None
+
+
+class CheckPermission(permissions.BasePermission):
+
+    def check_permission(self, user):
+        
+        if not user.role.name == "admin" and  not user.role.name == "HR" :
+            raise AuthenticationFailed("You are not authorized to perform this action only human resource or admin can do")
+      
+        return True
+
+    def has_permission(self, request, view):
+
+        user_access = self.check_permission(request.user)
+        
+        return user_access

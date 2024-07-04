@@ -1,11 +1,16 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from leave_management.settings import AUTH_USER_MODEL
 
 # Create your models here.
 
 class Role(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     status = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    deleted_by = models.ForeignKey("User", on_delete=models.CASCADE, blank=True, null=True, related_name="RoleDeletedBy")  
 
     def __str__(self) -> str:
         return self.name

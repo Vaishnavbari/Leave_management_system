@@ -10,4 +10,7 @@ urlpatterns = [
  path("add/role", views.RoleView.as_view(), name="AddRole"),
  path("update/role/<int:id>", views.RoleView.as_view(), name="UpdateRole"),
  path("delete/role/<int:id>", views.RoleView.as_view(), name="DeleteRole"),
+
+#  Update status 
+ path("update/role-status/<int:id>", views.UpdateRoleStatus.as_view(), name="UpdateRoleStatus"),
 ]
