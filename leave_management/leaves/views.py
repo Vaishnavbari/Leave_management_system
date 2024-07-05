@@ -6,11 +6,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
 # from models and serializer
 from .models import LeaveType, LeaveRule, Leave
 from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSerializer, LeaveApproveSerializer
-from user_registration.serializer import UserRegistrationSerializer
 
 # from jwt authorization and utils files 
 from leave_management.jwt_authorization import JWTAuthorization, CheckPermission

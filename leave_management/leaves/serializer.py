@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import LeaveType, LeaveRule, Leave
-from datetime  import datetime, timedelta
-
+from datetime  import datetime
 
 class LeaveTypeSerializer(serializers.ModelSerializer):
     type = serializers.CharField()
