@@ -31,6 +31,12 @@ class LeaveRule(models.Model):
 
 
 class Leave(models.Model):
+    select_status = (
+                    (1, 'Pending'),
+                    (2, 'Approved'),
+                    (3, 'Rejected'),
+                   )
+
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="LeaveAppliedBy")
     date_from = models.DateField()
@@ -40,7 +46,13 @@ class Leave(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    deleted_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="LeaveDeletedBy")  
+    deleted_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="LeaveDeletedBy")
+    approved_by_TL = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="ApproveByTL")
+    approved_by_HR = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="ApproveByHR")
+    approved_by_PM = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="ApproveByPM")
+    TL_status = models.CharField(max_length=50, choices=select_status, default=select_status[0][0])
+    HR_status = models.CharField(max_length=50, choices=select_status, default=select_status[0][0])
+    PM_status = models.CharField(max_length=50, choices=select_status, default=select_status[0][0])
 
     def __str__(self) -> str:
         return self.user.username

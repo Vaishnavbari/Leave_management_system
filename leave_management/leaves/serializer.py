@@ -13,7 +13,7 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
 
     def validate(self, validated_data):
         type = validated_data.get("type")
-        leave_type = LeaveType.objects.filter(type=type)
+        leave_type = LeaveType.objects.filter(type=type, deleted_at__isnull=True)
         if leave_type.exists():
             raise serializers.ValidationError("Leave type already exists")
         
@@ -43,7 +43,7 @@ class LeaveRuleSerializer(serializers.ModelSerializer):
         leave_type = validated_data.get("leave_type")
         role = validated_data.get("role")
 
-        leave_rule = LeaveRule.objects.filter(leave_type=leave_type, role=role)
+        leave_rule = LeaveRule.objects.filter(leave_type=leave_type, role=role, deleted_at__isnull=True)
         if leave_rule.exists():
             raise serializers.ValidationError("Leave rule already exists")
         
@@ -92,7 +92,9 @@ class LeaveSerializer(serializers.ModelSerializer):
            raise serializers.ValidationError("Date-to should be greater than date-from")
        
        # check leave rule validation 
-       leave_rule = LeaveRule.objects.filter(leave_type=leave_type, role=user.role.id, status=True).first()
+       leave_rule = LeaveRule.objects.filter(leave_type=leave_type, role=user.role.id, status=True, deleted_at__isnull=True).first()
+       if not leave_rule:
+           raise serializers.ValidationError(f"Leave rule not found for this role {user.role.name}")
 
        # Leave rule Validity   
        validity = leave_rule.validity
@@ -123,3 +125,75 @@ class LeaveSerializer(serializers.ModelSerializer):
 #         instance.reason = validated_data.get("reason", instance.reason)
 #         instance.save()
 #         return instance
+
+
+class LeaveApproveSerializer(serializers.Serializer):
+      status = serializers.IntegerField(required=True)
+
+      def update(self, instance, validated_data):
+        
+          user = self.context.get("user")
+          status1 = validated_data.get("status")
+          status_keys = list(dict(Leave.select_status).keys())
+
+          if status1 not in status_keys :
+            raise serializers.ValidationError("Status not found")
+
+          login_user_role = user.role.name
+
+          if login_user_role == "HR" or login_user_role == "admin" :
+              
+              if instance.HR_status == "2":
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_HR.role.name}")
+              
+              if instance.HR_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_HR.role.name}")
+              
+              instance.approved_by_HR = user
+              instance.HR_status = status1
+              instance.save()
+              return instance
+          
+          elif login_user_role == "PM" :
+              
+              if instance.HR_status == "2":
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_HR.role.name}")
+              
+              if instance.HR_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_HR.role.name}")
+              
+              if  instance.PM_status == "2" :
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_PM.role.name}")
+              
+              if instance.PM_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_PM.role.name}")
+                       
+              instance.approved_by_PM = user
+              instance.PM_status = status1
+              instance.save()
+              return instance
+          
+          elif login_user_role == "TL":
+              if  instance.HR_status == "2" :
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_HR.role.name}")
+              
+              if instance.HR_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_HR.role.name}")
+              
+              if  instance.PM_status == "2" :
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_PM.role.name}")
+              
+              if instance.PM_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_PM.role.name}")
+              
+              if  instance.TL_status == "2" :
+                  raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_TL.role.name}")
+              
+              if instance.TL_status == "3":
+                  raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_TL.role.name}")
+              
+              instance.approved_by_TL = user
+              instance.TL_status = status1
+              instance.save()
+              return instance
+              

@@ -55,7 +55,7 @@ class RoleSerializer(serializers.ModelSerializer):
 
     def validate(self, validated_data):
         name = validated_data.get("name")
-        role = Role.objects.filter(name=name).exists()
+        role = Role.objects.filter(name=name, deleted_at__isnull=True).exists()
         if role:
             raise serializers.ValidationError("Role already exists")
         return super().validate(validated_data)

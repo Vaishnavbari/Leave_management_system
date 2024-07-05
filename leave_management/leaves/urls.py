@@ -17,5 +17,8 @@ urlpatterns = [
     #  Update status 
     path("update/leave-rule-status/<int:id>", views.UpdateRuleStatus.as_view(), name="UpdateLiveRuleStatus"),
     path("update/leave-type-status/<int:id>", views.UpdateLeaveTypeStatus.as_view(), name="UpdateLiveTypeStatus"),
+    # Leave approved by 
+    path("approve/<int:id>", views.LeaveApprovedView.as_view(), name="ApproVal")
+
 
 ]

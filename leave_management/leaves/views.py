@@ -9,7 +9,8 @@ from rest_framework.views import APIView
 
 # from models and serializer
 from .models import LeaveType, LeaveRule, Leave
-from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSerializer
+from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSerializer, LeaveApproveSerializer
+from user_registration.serializer import UserRegistrationSerializer
 
 # from jwt authorization and utils files 
 from leave_management.jwt_authorization import JWTAuthorization, CheckPermission
@@ -92,7 +93,7 @@ class LeaveView(APIView):
     permission_classes = [JWTAuthorization]
 
     
-    @handle_exceptions()
+    # @handle_exceptions()
     def post(self, request):
         serializer = LeaveSerializer(data=request.data, context={"user":request.user})
         serializer.is_valid(raise_exception=True)
@@ -157,3 +158,30 @@ class UpdateRuleStatus(APIView):
             data.update(status=True)
         
         return Response({"message":"Status updated successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
+    
+
+class LeaveApprovedView(APIView):
+
+    permission_classes = [JWTAuthorization]
+
+    def put(self, request, id):
+
+        leave_data = Leave.objects.filter(id=id)
+        if not leave_data:
+            return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if not request.user.role.name == "Developer" and request.user.role.name == leave_data.first().user.role.name:
+            return Response({"message":"You are not authorized to approve this leave", "status":"error"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        serializer = LeaveApproveSerializer(instance=leave_data.first(), data=request.data, context={"user":request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        
+        # Get leave status 
+        status_keys = dict(Leave.select_status)
+        status_name = status_keys.get(int(request.data.get("status")))
+
+        return Response({"message":f"Leave {status_name} by {request.user.role.name}..!!", "data":LeaveSerializer(leave_data.first()).data, "status":"success"}, status=status.HTTP_200_OK)
+
+
+
