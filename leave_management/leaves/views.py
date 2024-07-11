@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 # from models and serializer
 from .models import LeaveType, LeaveRule, Leave
+from user_registration.models import Role 
 from leaves.serializer import LeaveTypeSerializer, LeaveRuleSerializer, LeaveSerializer, LeaveApproveSerializer
 
 # from jwt authorization and utils files 
@@ -50,6 +51,13 @@ class LeaveTypeView(APIView):
         leave_type_data.update(deleted_at=datetime.now(), deleted_by=request.user.id)
         return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
+    @handle_exceptions()
+    def get(self, request, count=None):
+        leaveData = LeaveType.objects.filter(status=True, deleted_at__isnull=True)
+        if count is not None:
+            return render(request, "leaves/leavedata.html", {"data": leaveData})
+        return render(request, "leaves/createLeaves.html", {"data": leaveData})
+
 
 class LeaveRuleView(APIView):
     
@@ -84,6 +92,10 @@ class LeaveRuleView(APIView):
         leave_rule_data.update(deleted_at=datetime.now(), deleted_by=request.user.id)
         return Response({"message":"Leave rule deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
+    def get(self, request):
+        leavedata = LeaveType.objects.filter(status=True, deleted_at__isnull=True)
+        roledata = Role.objects.filter(status=True, deleted_at__isnull=True)
+        return render(request, "leaves/leaverule.html", {"data": leavedata, "roledata":roledata})
 
 class LeaveView(APIView):
     

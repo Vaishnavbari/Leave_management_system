@@ -4,6 +4,8 @@ from . import views
 urlpatterns = [
     # LeaveType
     path("add", views.LeaveTypeView.as_view(), name="AddLeaveType"),
+    path("add/<int:count>", views.LeaveTypeView.as_view(), name="AddLeaveTypes"),
+
     path("update/<int:id>", views.LeaveTypeView.as_view(), name="UpdateLeaveType"),
     path("delete/<int:id>", views.LeaveTypeView.as_view(), name="DeleteLeaveType"),
      # LeaveRule
@@ -18,7 +20,11 @@ urlpatterns = [
     path("update/leave-rule-status/<int:id>", views.UpdateRuleStatus.as_view(), name="UpdateLiveRuleStatus"),
     path("update/leave-type-status/<int:id>", views.UpdateLeaveTypeStatus.as_view(), name="UpdateLiveTypeStatus"),
     # Leave approved by 
-    path("approve/<int:id>", views.LeaveApprovedView.as_view(), name="ApproVal")
+    path("approve/<int:id>", views.LeaveApprovedView.as_view(), name="ApproVal"),
+
+    #revised 
+    # path("add", views.AddLeave.as_view(), name="AddLeaveType"),
+
 
 
 ]

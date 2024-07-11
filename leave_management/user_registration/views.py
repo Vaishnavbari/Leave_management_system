@@ -1,4 +1,5 @@
 # from django 
+from django.shortcuts import render
 from django.contrib.auth import login, authenticate
 
 # from rest_framework
@@ -67,6 +68,10 @@ class LoginView(APIView):
         token, is_created = Token.objects.get_or_create(access_token=token.get("access"), refresh_token=token.get("refresh"), user=user)
         
         return Response({"message":"User logged in successfully..!!", "user_data": serializer.data, "token":TokenSerializer(token).data, "status":"success"}, status=status.HTTP_200_OK)
+    
+    def get(self, request):
+        return render(request, "user/login.html")
+
 
 
 class RoleView(APIView):
