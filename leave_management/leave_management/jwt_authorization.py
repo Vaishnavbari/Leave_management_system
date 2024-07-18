@@ -22,16 +22,23 @@ class JWTAuthorization(permissions.BasePermission):
     
     def authenticate(self, request):
         try:
-            auth_header = request.headers.get('Authorization')
+            # auth_header = request.headers.get('Authorization')
+            # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>", auth_header)
             
-            if not auth_header:
+            # if not auth_header:
+            #     return None
+
+            # token = auth_header.split(' ')[-1]
+            access_token = request.session.get("access_token")
+
+            refresh_token = request.session.get("refresh_token")
+
+            if not access_token or not refresh_token:
                 return None
-
-            token = auth_header.split(' ')[-1]
-
-            if Token.objects.filter(Q(access_token=token) | Q(refresh_token=token)).exists():
+            
+            if Token.objects.filter(Q(access_token=access_token) | Q(refresh_token=refresh_token)).exists():
                             
-                decoded_token = self.decode_jwt_token(token)
+                decoded_token = self.decode_jwt_token(refresh_token)
 
                 if decoded_token:
                     user_id = decoded_token['user_id']

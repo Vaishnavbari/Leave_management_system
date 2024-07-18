@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, Role
 import re
+from django.db.models import Q
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
@@ -14,7 +15,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         username = validated_data.get("username")
         password = validated_data.get("password")
         password2 = validated_data.get("password2")
-        
+        role = validated_data.get("role")
+
+        if Role.objects.filter(id=role.id).first().name == "HR" or Role.objects.filter(id=role.id).first().name == "admin" :
+            raise serializers.ValidationError("You are not allowed to register")
+
         if User.objects.filter(username=username).exists():
             raise serializers.ValidationError("Username already exists")
         

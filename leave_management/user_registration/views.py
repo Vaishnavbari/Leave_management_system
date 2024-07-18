@@ -1,6 +1,7 @@
 # from django 
 from django.shortcuts import render
 from django.contrib.auth import login, authenticate
+from django.db.models import Q
 
 # from rest_framework
 from rest_framework import status
@@ -43,6 +44,11 @@ class UserView(APIView):
         serializer.save()
         return Response({"message":"User registered successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
     
+    @handle_exceptions()
+    def get(self, request):
+        role_data = Role.objects.all().exclude(Q(name="HR") | Q(name="admin"))
+        return render(request, "user/register.html", {"data":role_data})
+    
 
 class LoginView(APIView):
 
@@ -64,11 +70,17 @@ class LoginView(APIView):
         login(request, user)  # Login user 
         
         token = get_tokens_for_user(user) # Generate token 
-
+        request.session["access_token"] = token.get("access")
+        request.session["refresh_token"] = token.get("refresh")
         token, is_created = Token.objects.get_or_create(access_token=token.get("access"), refresh_token=token.get("refresh"), user=user)
+        # result = Response({"message":"User logged in successfully..!!", "user_data": serializer.data, "token":TokenSerializer(token_obj).data, "status":"success"}, status=status.HTTP_200_OK)
+        # result.set_cookie("access", token.get("access"))
+        # result.set_cookie("refresh", token.get("refresh"))
+        # return result
         
         return Response({"message":"User logged in successfully..!!", "user_data": serializer.data, "token":TokenSerializer(token).data, "status":"success"}, status=status.HTTP_200_OK)
     
+    @handle_exceptions()
     def get(self, request):
         return render(request, "user/login.html")
 
@@ -112,7 +124,8 @@ class UpdateRoleStatus(APIView):
 
     renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization, CheckPermission]
-
+    
+    @handle_exceptions()
     def put(self, request, id):
 
         role = Role.objects.filter(id=id, deleted_at__isnull=True)

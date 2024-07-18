@@ -63,35 +63,64 @@
                 <div class="card-body p-md-5 mx-md-4">
 
                   <div class="text-center">
-                    <h4 class="mt-1 mb-5 pb-1">Leave Management System</h4>
+                    <h4 class="mt-1 mb-2 pb-1">Leave Management System</h4>
                   </div>
 
-                  <form method="POST" id="loginform">
+                  <form method="POST" id="registerform">
                     {% csrf_token %}
-                    <div class="form-outline mb-4">
+                    <div class="form-outline ">
                       <span id="errorMessages" style="color:red"></span>
                     </div>
 
-                    <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example11" name="Username" >Username</label>
+                      <div class="form-outline ">
+                         <label class="form-label" for="form2Example134"> Select Role</label>
+
+                          <select class="form-select" aria-label="Default select example" name="role">
+                          <option value="" selected >Open this select role </option>
+                          {% for data in data %}
+                          <option value="{{data.id}}">{{data}}</option>
+                          {% endfor %}
+                          </select>
+                      <span id="role" style="color:red"></span>
+
+                    </div>
+                    <div class="form-outline ">
+                      <label class="form-label" for="form2Example11"  >Username</label>
                       <input type="text" id="form2Example11" class="form-control" placeholder="Username" name="username"/>
-                      <span id="username" style="color:red"></span>
+                    <span id="username" style="color:red"></span>
+
                     </div>
 
-                    <div class="form-outline mb-4">
+                    <div class="form-outline ">
+                      <label class="form-label" for="form2Example11"  >Email</label>
+                      <input type="email" id="form2Example17" class="form-control" placeholder="Email" name="email"/>
+                    <span id="email" style="color:red"></span>
+
+                    </div>
+
+                    <div class="form-outline ">
                       <label class="form-label" for="form2Example22" >password</label>
-                      <input type="password" id="form2Example22" class="form-control" name="password" placeholder="password"  />
-                      <span id="password" style="color:red"></span>
+                      <input type="text" id="form2Example22" class="form-control" name="password" placeholder="password" />
+                    <span id="password" style="color:red"></span>
+
                     </div>
 
-                      <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Log in</button>
-                      <a class="text-muted" href="#!">Forgot password?</a>
+                    <div class="form-outline ">
+                        <label class="form-label" for="form2Example22" >confirm password</label>
+                        <input type="password" id="form2Example22" class="form-control" name="password2" placeholder="confirm password" />
+                    <span id="password2" style="color:red"></span>
+
+                    </div>
+
+                    <div class="text-center pt-1 ">
+                      <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Register</button>
+                    </div>
 
                     <div class="d-flex align-items-center justify-content-center pb-4">
-                      <p class="mb-0 me-2">Don't have an account?</p>
-                      <a href="{% url "Register" %}"> 
-                      <button type="button" class="btn btn-outline-danger">Create new </button>
-                      </a>
+                      <p class="mb-0 me-2">Do you have an account?</p>
+                      <a href="{% url 'Login' %}"> 
+                      <button type="button" class="btn btn-outline-danger">Login here !</button>
+                    </a>
                     </div>
 
                   </form>
@@ -110,40 +139,59 @@
       </div>
     </div>
   </section>
-<script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script >
   $(document).ready(function() {
-    $(document).on('submit', '#loginform', function(e) {
+    console.log("Refresh token:", localStorage.getItem('refresh_token'))
+    $(document).on('submit', '#registerform', function(e) {
       e.preventDefault();
       const formData = new FormData(this);
-      var url = 'http://127.0.0.1:8000/user/login';
+      var url = 'http://127.0.0.1:8000/user/register';
+      const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
       fetch(url, {
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Authorization': `Bearer ${refreshToken}`, 
         },
           body: formData
       })
       .then(response => response.json())
       .then(data => {
-
-         $('#username').html('');
-          $('#password').html('');
-          $('#errorMessages').html('');
-          console.log(data)
-          if (data.errors) {
-
-              for (const key in data.errors.errors) {
+ 
+        $('#username').html('');
+        $('#role').html('');
+        $('#password').html('');
+        $('#password2').html('');
+        $('#email').html('');
+        $('#errorMessages').html('');
+        if (data.errors) {
+            console.log(data.errors)
+              for (const key in data.errors) {
                   if (key === "username") {
-                      const usernameError = data.errors.errors.username ? data.errors.errors.username[0] : "";
+                      const usernameError = data.errors.username ? data.errors.username[0] : "";
                       $('#username').html(usernameError);
                   } else if (key === "password") {
-                      const passwordError = data.errors.errors.password ? data.errors.errors.password[0] : " ";
+                      const passwordError = data.errors.password ? data.errors.password[0] : " ";
                       $('#password').html(passwordError);
                   }
+                  else if (key === "password2") {
+                    const cpasswordError = data.errors.password2 ? data.errors.password2[0] : " ";
+                    $('#password2').html(cpasswordError);
+                }
+                else if (key === "email") {
+                  const emailError = data.errors.email ? data.errors.email[0] : " ";
+                  $('#email').html(emailError);
+                }
+                else if (key === "role") {
+                  const roleError = data.errors.role ? data.errors.role[0] : " ";
+                  $('#role').html(roleError);
+                }
                   else {
-                      const error = data.errors.errors[key] ? data.errors.errors[key][0] : " ";
+                      const error = data.errors[key] ? data.errors[key][0] : " ";
                       $('#errorMessages').html(error);
-
                   }
               }
           }
@@ -151,10 +199,11 @@
           if (data.status === "error") {
               $('#errorMessages').html(data.message);
           }
-
+   
+          if (data.non_field_errors) {
+            $('#errorMessages').html(data.data.non_field_errors[0]);
+        }
           if (data.status === "success") {
-            localStorage.setItem('access_token', data.token.access_token);
-            localStorage.setItem('refresh_token', data.token.refresh_token);
               Toastify({
                 text: data.message,
                 duration: 3000,
@@ -175,6 +224,7 @@
       });
     });
   });
-  </script>
+
+</script >
 </body>
 </html>

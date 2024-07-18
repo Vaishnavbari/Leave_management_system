@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import LeaveType, LeaveRule, Leave
-from datetime  import datetime
+from datetime  import datetime, time
+from rest_framework import status
 
 class LeaveTypeSerializer(serializers.ModelSerializer):
     type = serializers.CharField()
@@ -13,13 +14,21 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
     def validate(self, validated_data):
         type = validated_data.get("type")
         leave_type = LeaveType.objects.filter(type=type, deleted_at__isnull=True)
+
+        if self.instance:
+            leave_type = LeaveType.objects.filter(type=type, deleted_at__isnull=True).exclude(id=self.instance.id)
+
         if leave_type.exists():
             raise serializers.ValidationError("Leave type already exists")
         
         return super().validate(validated_data)
 
     def create(self, validated_data):
+        print("validated", validated_data)
         type = validated_data.get("type")
+        leave_type = LeaveType.objects.filter(type=type, deleted_at__isnull=True)
+        if leave_type.exists():
+            raise serializers.ValidationError("Leave type already exists")
         description = validated_data.get("description")
         leave_type = LeaveType.objects.create(type=type, description=description)
         return leave_type
@@ -41,7 +50,7 @@ class LeaveRuleSerializer(serializers.ModelSerializer):
     def validate(self, validated_data):
         leave_type = validated_data.get("leave_type")
         role = validated_data.get("role")
-
+       
         leave_rule = LeaveRule.objects.filter(leave_type=leave_type, role=role, deleted_at__isnull=True)
         if leave_rule.exists():
             raise serializers.ValidationError("Leave rule already exists")
@@ -130,7 +139,6 @@ class LeaveApproveSerializer(serializers.Serializer):
       status = serializers.IntegerField(required=True)
 
       def update(self, instance, validated_data):
-        
           user = self.context.get("user")
           status1 = validated_data.get("status")
           status_keys = list(dict(Leave.select_status).keys())
@@ -150,18 +158,29 @@ class LeaveApproveSerializer(serializers.Serializer):
               
               instance.approved_by_HR = user
               instance.HR_status = status1
+              instance.status = status1
+              
+              if not instance.HR_status == status1 :
+                instance.approved_by_PM = user
+                instance.PM_status = status1
+
+                instance.approved_by_TL = user
+                instance.TL_status = status1
+                instance.save()
+
               instance.save()
+             
               return instance
           
           elif login_user_role == "PM" :
-              
+              print(status1)
               if instance.HR_status == "2":
                   raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_HR.role.name}")
               
               if instance.HR_status == "3":
                   raise serializers.ValidationError(f"Leave rejected  by {instance.approved_by_HR.role.name}")
               
-              if  instance.PM_status == "2" :
+              if instance.PM_status == "2" :
                   raise serializers.ValidationError(f"Leave already approved by {instance.approved_by_PM.role.name}")
               
               if instance.PM_status == "3":
@@ -169,6 +188,12 @@ class LeaveApproveSerializer(serializers.Serializer):
                        
               instance.approved_by_PM = user
               instance.PM_status = status1
+              instance.save()
+
+              if not instance.PM_status == status1 :
+                instance.approved_by_TL = user
+                instance.TL_status = status1
+
               instance.save()
               return instance
           

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Add Leave Form </title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="img/mdb-favicon.ico" type="image/x-icon" />
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" />
+<!-- Google Fonts Roboto -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" />
+<!-- MDB -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+
+<link
+    rel="stylesheet"
+    type="text/css"
+    href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+<body>
+<div class="container">
+  <h3 class="mt-4">Apply leave form</h3>
+  <center>
+  <div id="errorMessages" style="color:red"></div>
+  </center>
+  <form method="POST" id="addLeave">
+    {% csrf_token %}
+
+    <div class="form-group" >
+        <select class="form-select form-control "aria-label="Default select example" name="leave_type">
+        <option value=""  class="form-control" selected >Open this select leave type </option>
+        {% for data in leavetype %}
+        <option value="{{data.id}}">{{data}}</option>
+        {% endfor %}
+        </select>
+     <div id="leave_type" style="color:red"></div>
+
+    </div>
+    <div class="form-group" >
+      <label for="datefrom">DateFrom:</label>
+      <input type="text" class="form-control" id="datefrom1" placeholder="Enter date" name="date_from">
+    <div id="date_from" style="color:red"></div>
+
+    </div>
+
+    <div class="form-group">
+        <label for="datete">DateTo:</label>
+        <input type="text" class="form-control" id="dateto1" placeholder="Enter date" name="date_to">
+    <div id="date_to" style="color:red"></div>
+
+    </div>
+
+
+    <div class="form-group">
+        <label for="email">Reason:</label>
+        <input type="text" class="form-control" id="reason" placeholder="Enter Reason" name="reason">
+    <div id="reason2" style="color:red"></div>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+<div class="table-responsive" style="margin:2rem">
+    <table class="table table-sm" style="color:black; background-color: white !important;">
+        <thead style="background:none; color:black">
+            <tr style="background:none color:black">
+                <th scope="col">id</th>
+                <th scope="col">Leave Type</th>
+                <th scope="col">Date From</th>
+                <th scope="col">Date To</th>
+                <th scope="col">reason</th>
+                <th scope="col">status</th>
+                <th scope="col">Delete</th>
+            </tr>
+        </thead>
+        <tbody id="genrater">
+            {% include "leaves/leaves.html" %}
+        </tbody>
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+  $(document).ready(function() {
+    $(document).on('submit', '#addLeave', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      var accessToken = localStorage.getItem('access_token');
+      var refreshToken = localStorage.getItem('refresh_token');
+      var url = 'http://127.0.0.1:8000/leave/add/user-leave';
+      fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Authorization': `Bearer ${refreshToken}`, 
+            'refresh_token': refreshToken
+        },
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          $('#leave_type').html('');
+          $('#date_from').html('');
+          $('#date_to').html('');
+          $('#reason2').html('');
+          $('#errorMessages').html('');
+          
+          if (data.errors) {
+              for (const key in data.errors) {
+                  if (key === "leave_type") {
+                      const typeError = data.errors.leave_type ? data.errors.leave_type[0] : "";
+                      $('#leave_type').html(typeError);
+                  } else if (key === "date_from") {
+                      const descriptionError = data.errors.date_from ? data.errors.date_from[0] : " ";
+                      $('#date_from').html(descriptionError);
+                  }
+                  else if (key === "date_to") {
+                    const date_to = data.errors.date_to ? data.errors.date_to[0] : " ";
+                    $('#date_to').html(date_to);
+                  }
+                  else if (key === "reason") {
+                    const reason = data.errors.reason ? data.errors.reason[0] : "";
+                    $('#reason2').html(reason);
+                }
+                  else {
+                      const error = data.errors[key] ? data.errors[key][0] : " ";
+                      $('#errorMessages').html(error);
+
+                  }
+              }
+          }
+
+          if (data.errors && data.errors === "non_field_errors") {
+              $('#errorMessages').html(data.errors);
+          }
+
+          if (data.message) {
+              Toastify({
+                text: data.message,
+                duration: 3000,
+                       gravity: "top",
+                       position: "right",
+                       stopOnFocus: true,
+                       style: {
+                           width:"300px",
+                           background: "#28a745",
+                           color: "#fff",
+                       },
+                       onClick: function () {},
+                   }).showToast();
+              loadTableData () 
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+    });
+  });
+
+  function loadTableData () {
+    var accessToken = localStorage.getItem('access_token');
+    var refreshToken = localStorage.getItem('refresh_token');
+    var count = 0
+      $.ajax({
+        url: `http://127.0.0.1:8000/leave/add/user-leave/${count}`,
+        
+        type: "GET",
+        
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Authorization': `Bearer ${refreshToken}`, 
+            'refresh_token': refreshToken
+        },
+        
+        success: function (response) {
+        console.log(response)
+            $("#genrater").html(response);
+            $('#addLeave')[0].reset();
+            count++;
+
+        },
+        error: function (xhr, status, error) {
+          console.error(error);
+        },
+      });
+    }
+
+  // delete leave
+
+  $(document).on('click', '.delete', function (e) {
+    var id = $(this).attr("id");
+    console.log(id);
+    var url = `http://127.0.0.1:8000/leave/delete/user-leave/${id}`
+    var accessToken = localStorage.getItem('access_token');
+    var refreshToken = localStorage.getItem('refresh_token');
+    $.ajax({
+        url: url,
+        type: "DELETE",
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+          'Authorization': `Bearer ${refreshToken}`, 
+          'refresh_token': refreshToken
+      },
+        success: function (response) {
+                Toastify({
+                 text: response.message,
+                 duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            width:"300px",
+                            position:"right",
+                            background: "#28a745",
+                            color: "#fff",
+                        },
+                        onClick: function () {},
+                    }).showToast();
+            if (response.status=="success"){
+                loadTableData();
+            }
+        },
+        error: function (xhr, status, error) {
+          if (xhr.status === 400) {
+            Toastify({
+                text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                duration: 3000,
+                       gravity: "top",
+                       position: "right",
+                       stopOnFocus: true,
+                       style: {
+                           width:"300px",
+                           position:"right",
+                           background: "red",
+                           color: "#fff",
+                       },
+                       onClick: function () {},
+                   }).showToast();
+                   loadTableData () 
+                }
+        else if (xhr.status === 404){
+            Toastify({
+                text:xhr.responseJSON.message ,
+                duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            width:"300px",
+                            position:"right",
+                            background: "red",
+                            color: "#fff",
+                        },
+                        onClick: function () {},
+                    }).showToast();
+                    loadTableData () 
+                }
+        else {
+            Toastify({
+                text: "Something Went Wrong...!!!",
+                duration: 3000,
+                       gravity: "top",
+                       position: "right",
+                       stopOnFocus: true,
+                       style: {
+                           width:"300px",
+                           position:"right",
+                           background: "red",
+                           color: "#fff",
+                       },
+                       onClick: function () {},
+                   }).showToast();
+                   loadTableData () 
+                }
+                },
+         });
+});
+
+</script>
+</body>
+</html>
+
+</body>
+</html>

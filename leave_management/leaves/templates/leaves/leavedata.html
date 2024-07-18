@@ -1,22 +1,26 @@
 {% for i in data %}
-<tr style="background:none"   >
+<tr>
     <th scope="row">{{ forloop.counter }}</th>
     <td id="{{i.id}}"  name="type">{{ i.type }}</td>
     <td id="{{i.id}}" name="description">{{ i.description }}</td>
-   
     <td>
-        <button  class="btn btn-warning edit" id="{{i.id}}" >
-         Edit               
+        <button type="submit" class="btn btn-warning edit" id="{{i.id}}" >
+          Edit               
           </button>
     </td>
     <td>
-        <button  class="btn btn-danger delete" id="{{i.id}}" >
+        <button type="submit" class="btn btn-danger delete" id="{{i.id}}" >
             Delete
         </button>
-        
     </td>
-    <td><i class="fa-solid fa-toggle-on fa-fade  fa-2x " style="color:#35ff2a"></i></td>
-
-
+    <td>
+        {% if i.status %}
+        <i class="fa-solid fa-toggle-on  fa-2x status {{i.id}}" id="Td-{{i.id}}" style="color:#35ff2a">
+        </i>
+        {% else %}
+        <i class="fa-solid fa-toggle-off fa-2x status" id="Td-{{i.id}}">
+        </i>
+        {% endif %}
+    </td>
 </tr>
 {% endfor %}

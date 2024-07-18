@@ -1,0 +1,45 @@
+{% for i in data %}
+<tr>
+    <th scope="row">{{ forloop.counter }}</th>
+    <td id="{{ i.id }}" name="date_from">{{ i.date_from }}</td>
+    <td id="{{ i.id }}" name="date_to">{{ i.date_to }}</td>
+    <td id="{{ i.id }}" name="reason">{{ i.reason }}</td>
+    <td id="{{ i.id }}" name="status">{{ i.get_status_display }}</td>
+
+    <td id="{{ i.id }}" name="HRstatus">
+        {% if i.get_HR_status_display == "Pending" %}
+            <select name="select_hr" id="{{ i.id }}" class="select" {% if request.user.role.name != "HR" %}disabled{% endif %}>
+                <option value="1" {% if i.get_HR_status_display == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="2">Approved</option>
+                <option value="3">Rejected</option>
+            </select>
+        {% else %}
+            {{ i.get_HR_status_display }}
+        {% endif %}
+    </td>
+
+    <td id="{{ i.id }}" name="PMstatus">
+        {% if i.get_PM_status_display == "Pending" %}
+            <select name="select_pm" id="{{ i.id }}" class="select" {% if request.user.role.name != "PM" %}disabled{% endif %}>
+                <option value="1" {% if i.get_PM_status_display == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="2">Approved</option>
+                <option value="3">Rejected</option>
+            </select>
+        {% else %}
+            {{ i.get_PM_status_display }}
+        {% endif %}
+    </td>
+
+    <td id="{{ i.id }}" name="TLstatus">
+        {% if i.get_TL_status_display == "Pending" %}
+            <select name="select_tl" id="{{ i.id }}" class="select" {% if request.user.role.name != "TL" %}disabled{% endif %}>
+                <option value="1" {% if i.get_TL_status_display == "Pending" %}selected{% endif %}>Pending</option>
+                <option value="2">Approved</option>
+                <option value="3">Rejected</option>
+            </select>
+        {% else %}
+            {{ i.get_TL_status_display }}
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

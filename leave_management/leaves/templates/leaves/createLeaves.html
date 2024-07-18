@@ -16,30 +16,22 @@
     <!-- MDB -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
 
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <style>
-      table tr {
-        border: solid black 1px;
-      }
-        table, th, td, thead, tbody, tr {
-            background-color: transparent !important;
-            color: black !important;
-          
-        }
-        .main{
-  
-          height:100vh;
-          width:100vw;
-          {% comment %} background-image: url("{% static 'css/employee.png' %}"); {% endcomment %}
-          background-size:cover;
-          
-        
-          }
-          .editable {
-            border: 2px solid black; /* Add your desired border style */
-            padding: 5px; /* Optional: Add padding for better appearance */
+        .editable {
+            border: 2px solid black; 
+            padding: 5px;
         }
     </style>
 </head>
@@ -57,12 +49,13 @@
 
         <form style="background:none" method="POST" id="projectForm">
             {% csrf_token %}
-            <div class="form-row align-items-center">
+            <div class="form-row align-items-center" style="display: flex; flex-direction: column;">
                 <div class="col-sm-3 my-1">
                     <label class="sr-only" for="inlineFormInputName">Leave Type</label>
                     <input type="text" class="form-control" placeholder="Add Leave" id="typeData" name="type">
                 </div>
                 <span id="type" style="color:red"></span>
+                <br>
                 <div class="col-sm-3 my-1">
                     <label class="sr-only" for="inlineFormInputName">Description</label>
                     <textarea type="text" class="form-control" placeholder="Add Description" type="DescriptionData" name="description" style="height:10rem;"></textarea>
@@ -100,11 +93,15 @@
           e.preventDefault();
           const formData = new FormData(this);
           var url = 'http://127.0.0.1:8000/leave/add';
+          var accessToken = localStorage.getItem('access_token');
+          var refreshToken = localStorage.getItem('refresh_token');
           fetch(url, {
               method: 'POST',
               headers: {
-                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-              },
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Authorization': `Bearer ${refreshToken}`, 
+                'refresh_token': refreshToken
+            },
               body: formData
           })
           .then(response => response.json())
@@ -112,7 +109,6 @@
               $('#type').html('');
               $('#description').html('');
               $('#errorMessages').html('');
-              
               if (data.errors && data.errors.errors) {
                   for (const key in data.errors.errors) {
                       if (key === "type") {
@@ -124,6 +120,7 @@
                       } else {
                           const error = data.errors.errors[key] ? data.errors.errors[key][0] : " ";
                           $('#errorMessages').html(error);
+
                       }
                   }
               }
@@ -132,8 +129,20 @@
                   $('#errorMessages').html(data.errors);
               }
 
-              if (data.message) {
-                  $('#errorMessages').html(data.message);
+              if (data.status == "success") {
+                  Toastify({
+                    text: data.message,
+                    duration: 3000,
+                           gravity: "top",
+                           position: "right",
+                           stopOnFocus: true,
+                           style: {
+                               width:"300px",
+                               background: "#28a745",
+                               color: "#fff",
+                           },
+                           onClick: function () {},
+                       }).showToast();
                   loadTableData () 
               }
           })
@@ -143,16 +152,21 @@
         });
       });
 
-
       function loadTableData () {
         var count = 0
-          $.ajax({
+        var accessToken = localStorage.getItem('access_token');
+        var refreshToken = localStorage.getItem('refresh_token');
+        $.ajax({
             url: `http://127.0.0.1:8000/leave/add/${count}`,
             
             type: "GET",
-            
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Authorization': `Bearer ${refreshToken}`, 
+                'refresh_token': refreshToken
+            },
             success: function (response) {
-           
+            console.log(response)
                 $("#genrate").html(response);
                 count++;
                 $('#projectForm')[0].reset();
@@ -169,15 +183,22 @@
         var id = $(this).attr("id");
         console.log(id);
         var url = `http://127.0.0.1:8000/leave/delete/${id}`
+        var accessToken = localStorage.getItem('access_token');
+        var refreshToken = localStorage.getItem('refresh_token');
         $.ajax({
             url: url,
             type: "DELETE",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Authorization': `Bearer ${refreshToken}`, 
+                'refresh_token': refreshToken
+            },
             success: function (response) {
                     Toastify({
                      text: response.message,
                      duration: 3000,
                             gravity: "top",
-                            position: "left",
+                            position: "right",
                             stopOnFocus: true,
                             style: {
                                 width:"300px",
@@ -192,49 +213,257 @@
                 }
             },
             error: function (xhr, status, error) {
-                    console.error(error);
+                if (xhr.status === 400) {
+                    Toastify({
+                        text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                        duration: 3000,
+                               gravity: "top",
+                               position: "right",
+                               stopOnFocus: true,
+                               style: {
+                                   width:"300px",
+                                   position:"right",
+                                   background: "red",
+                                   color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                           loadTableData () 
+                        }
+                else if (xhr.status === 404){
+                    Toastify({
+                        text:xhr.responseJSON.message ,
+                        duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                stopOnFocus: true,
+                                style: {
+                                    width:"300px",
+                                    position:"right",
+                                    background: "red",
+                                    color: "#fff",
+                                },
+                                onClick: function () {},
+                            }).showToast();
+                            loadTableData () 
+                        }
+                else {
+                    Toastify({
+                        text: "Something Went Wrong...!!!",
+                        duration: 3000,
+                               gravity: "top",
+                               position: "right",
+                               stopOnFocus: true,
+                               style: {
+                                   width:"300px",
+                                   position:"right",
+                                   background: "red",
+                                   color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                           loadTableData () 
+                        }
                     },
              });
     });
    
     // edit leave
-    $(document).on('click', '.edit', function (e) {
-        var id = $(this).attr("id");
-        var tds = $(this).closest('tr').find("td");
-        tds.eq(0).addClass('editable');
-        tds.eq(1).addClass('editable');
-        tds.eq(0).attr('contenteditable', true); 
-        tds.eq(1).attr('contenteditable', true);
-        var button = $(this); 
-        button.html('Save');
-        var data = {
-            type: tds[0].innerText, 
-            description: tds[1].innerText
-        };
-        console.log(data)
+    $(document).on('click', '.edit', function (e){
+        var button = $(this);
+        console.log(button.html())
+        var id = button.attr("id");
+        var tds = button.closest('tr').find("td");
+        if (button.html().trim() === 'Edit') {
+            tds.eq(0).addClass('editable').attr('contenteditable', true);
+            tds.eq(1).addClass('editable').attr('contenteditable', true);
+            button.html('Save');
+        } 
+        else {
+            var data = {
+                type: tds.eq(0).text(),
+                description: tds.eq(1).text()
+            };
         var url = `http://127.0.0.1:8000/leave/update/${id}`
+        var accessToken = localStorage.getItem('access_token');
+        var refreshToken = localStorage.getItem('refresh_token');
         $.ajax({
             url: url,
             type: "PUT",
             data: JSON.stringify(data),
             contentType: "application/json",
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Authorization': `Bearer ${refreshToken}`, 
+                'refresh_token': refreshToken
+            },
             success: function (response) {
                    button.html('Edit');
                    tds.eq(0).removeClass('editable');
                    tds.eq(1).removeClass('editable');
                    tds.eq(0).attr('contenteditable', false); 
                    tds.eq(1).attr('contenteditable', false);
-                   console.log(response);
+                   if (response.message) {
+                    Toastify({
+                      text: response.message,
+                      duration: 3000,
+                             gravity: "top",
+                             position: "right",
+                             stopOnFocus: true,
+                             style: {
+                                 width:"300px",
+                                 background: "#28a745",
+                                 color: "#fff",
+                             },
+                             onClick: function () {},
+                         }).showToast();
+                         loacation.reload()
+                }
 
             },
             error: function (xhr, status, error) {
-                console.error(error);
+                if (xhr.status === 400) {
+                    Toastify({
+                        text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                        duration: 3000,
+                               gravity: "top",
+                               position: "right",
+                               stopOnFocus: true,
+                               style: {
+                                   width:"300px",
+                                   position:"right",
+                                   background: "red",
+                                   color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                           loadTableData () 
+                        }
+                else if (xhr.status === 404){
+                    Toastify({
+                        text:xhr.responseJSON.message ,
+                        duration: 3000,
+                                gravity: "top",
+                                position: "right",
+                                stopOnFocus: true,
+                                style: {
+                                    width:"300px",
+                                    position:"right",
+                                    background: "red",
+                                    color: "#fff",
+                                },
+                                onClick: function () {},
+                            }).showToast();
+                            loadTableData () 
+                        }
+                else {
+                    Toastify({
+                        text: "Something Went Wrong...!!!",
+                        duration: 3000,
+                               gravity: "top",
+                               position: "right",
+                               stopOnFocus: true,
+                               style: {
+                                   width:"300px",
+                                   position:"right",
+                                   background: "red",
+                                   color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                           loadTableData () 
+                        }
                 },
-                });
-        });
+         });
+        }
+     })
 
-        
-      
+    // update leave status
+    $(document).on('click', '.status', function(e) {
+            var id = $(this).attr("id").replace("Td-", "");
+            var statusIcon = $(this);
+            var url = `http://127.0.0.1:8000/leave/update/leave-type-status/${id}`
+            var accessToken = localStorage.getItem('access_token');
+            var refreshToken = localStorage.getItem('refresh_token');
+            $.ajax({
+                url: url,
+                type: "PUT",
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Authorization': `Bearer ${refreshToken}`, 
+                    'refresh_token': refreshToken
+                },
+                success: function(response) {
+                    Toastify({
+                        text: response.message,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            width:"300px",
+                            background: "#28a745",
+                            color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                    loadTableData();
+                },
+                error: function(xhr, status, error) {
+                    if (xhr.status === 400) {
+                        Toastify({
+                            text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                            duration: 3000,
+                                   gravity: "top",
+                                   position: "right",
+                                   stopOnFocus: true,
+                                   style: {
+                                       width:"300px",
+                                       position:"right",
+                                       background: "red",
+                                       color: "#fff",
+                                   },
+                                   onClick: function () {},
+                               }).showToast();
+                               loadTableData () 
+                            }
+                    else if (xhr.status === 404){
+                        Toastify({
+                            text:xhr.responseJSON.message ,
+                            duration: 3000,
+                                    gravity: "top",
+                                    position: "right",
+                                    stopOnFocus: true,
+                                    style: {
+                                        width:"300px",
+                                        position:"right",
+                                        background: "red",
+                                        color: "#fff",
+                                    },
+                                    onClick: function () {},
+                                }).showToast();
+                                loadTableData () 
+                            }
+                    else {
+                        Toastify({
+                            text: "Something Went Wrong...!!!",
+                            duration: 3000,
+                                   gravity: "top",
+                                   position: "right",
+                                   stopOnFocus: true,
+                                   style: {
+                                       width:"300px",
+                                       position:"right",
+                                       background: "red",
+                                       color: "#fff",
+                                   },
+                                   onClick: function () {},
+                               }).showToast();
+                               loadTableData () 
+                        }
+                },
+            });
+        });
     </script>
 </body>
 </html>

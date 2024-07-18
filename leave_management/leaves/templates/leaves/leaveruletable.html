@@ -1,0 +1,28 @@
+{% for leave_type_id, rules in data.items %}
+      {% for rule in rules %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          {% if forloop.first %}
+            <td rowspan="{{ rules|length }}" class="centered">{{ rule.leave_type }}</td>
+          {% endif %}
+          <td>{{ rule.validity }}</td>
+          <td>{{ rule.role }}</td>
+
+          {% if forloop.first %}
+          <td rowspan="{{ rules|length }}" class="centered">
+        <button type="submit" class="btn btn-warning edit" id="{{ rule.id }}"><a href="{% url 'EditLeaveRuleData' rule.leave_type_id %}">Edit</a></button>
+          </td>
+          {% endif %}
+          <td>
+            <button type="submit" class="btn btn-danger delete" id="{{ rule.id }}">Delete</button>
+          </td>
+          <td>
+            {% if rule.status %}
+              <i class="fa-solid fa-toggle-on fa-2x status" id="Td-{{ rule.id }}" style="color:#35ff2a"></i>
+            {% else %}
+              <i class="fa-solid fa-toggle-off fa-2x status" id="Td-{{ rule.id }}"></i>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+{% endfor %}
