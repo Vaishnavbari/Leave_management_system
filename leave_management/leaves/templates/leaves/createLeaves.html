@@ -33,6 +33,27 @@
             border: 2px solid black; 
             padding: 5px;
         }
+        body, html {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        .container-fluid {
+            overflow: hidden;
+            padding: 0;
+        }
+        .table-fit {
+            width: 100%;
+            table-layout: fixed;
+        }
+    
+        .table-fit th, .table-fit td {
+            word-wrap: break-word;
+        }
+        .table-responsive-leave {
+            display: table;
+        }
+
     </style>
 </head>
 
@@ -69,16 +90,16 @@
         </form>
     </center>
     <div class="container-fluid" style="margin-top: 2rem;">
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered col-12" style="color: black; background-color: white;">
-                <thead class="thead-light">
-                    <tr>
-                        <th scope="col" class="col-1">ID</th>
+        <div class="table-responsive-leave" style="margin:2rem">
+            <table class="table table-sm table-fit " style="color:black; background-color: white !important;  text-align: center !important;">
+                <thead style="background:none; color:black">
+                    <tr style="background:none color:black">
+                        <th scope="col" class="col-1"  style="width:5%">ID</th>
                         <th scope="col" class="col-3">Leave Type</th>
-                        <th scope="col" class="col-3">Description</th>
-                        <th scope="col" class="col-1">Edit</th>
-                        <th scope="col" class="col-1">Delete</th>
-                        <th scope="col" class="col-1">Status</th>
+                        <th scope="col" class="col-3" style="width:40%">Description</th>
+                        <th scope="col" class="col-1" style="width:10%">Edit</th>
+                        <th scope="col" class="col-1" style="width:10%">Delete</th>
+                        <th scope="col" class="col-1" style="width:10%">Status</th>
                     </tr>
                 </thead>
                 <tbody id="genrate">
@@ -320,6 +341,7 @@
                              },
                              onClick: function () {},
                          }).showToast();
+                         loacation.reload()
                 }
 
             },

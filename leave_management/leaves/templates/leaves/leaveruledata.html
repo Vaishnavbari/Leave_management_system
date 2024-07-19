@@ -38,17 +38,15 @@
         table, th, td, thead, tbody, tr {
             background-color: transparent !important;
             color: black !important;
-            border:2px solid black;
+            border:2px solid black !important;
           
         }
         .centered {
             vertical-align: middle !important; /* Center text vertically */
-            text-align: center;
+            text-align: center !important;;
           }
 
         .main{
-          height:100vh;
-          width:100vw;
           background-size:cover;
         }
 
@@ -56,23 +54,35 @@
             border: 2px solid black; 
             padding: 5px;
         }
+        .table-fit {
+            width: 100%;
+            table-layout: fixed;
+        }
+    
+        .table-fit th, .table-fit td {
+            word-wrap: break-word;
+        }
+        .table-responsive-leave {
+            display: table;
+        }
+
     </style>
 </head>
 
 <body class="main">
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-    
-    <div class="table-responsive" style="margin:2rem">
-        <table class="table table-sm" style="color:black; background-color: white !important;">
+   <center> <h3 class="m-3"> Leave Rule Data  </h3></center> 
+    <div class="table-responsive-leave" style="margin:2rem">
+        <table class="table table-sm table-fit " style="color:black; background-color: white !important;  text-align: center !important;">
             <thead style="background:none; color:black">
                 <tr style="background:none color:black">
-                    <th scope="col">id</th>
+                    <th scope="col" style="width:5%">id</th>
                     <th scope="col">leavetype</th>
                     <th scope="col">validity</th>
                     <th scope="col">role</th>
                     <th scope="col" rawspan="{{count}}">Edit</th>
-                    <th scope="col">Delete</th>
-                    <th scope="col">Status</th>
+                    <th scope="col" style="width:10%">Delete</th>
+                    <th scope="col" style="width:10%">Status</th>
                 </tr>
             </thead>
             <tbody id="genrates">

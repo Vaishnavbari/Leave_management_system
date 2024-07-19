@@ -76,7 +76,7 @@ class LeaveRuleView(APIView):
     #     serializer.save()
     #     return Response({"message":"Leave rule created successfully..!!", "data":serializer.data, "status":"success"}, status=status.HTTP_201_CREATED)
 
-    @handle_exceptions()
+    # @handle_exceptions()
     def post(self, request):
         validity = request.data.getlist("validity[]")
         leave_type = request.data.get("leave_type")
@@ -99,6 +99,7 @@ class LeaveRuleView(APIView):
                 return Response({"message":"Leave rule already exists", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
         for index in range(len(role)):
+            # if int(validity[index]) != 0:
             leave_rule = LeaveRule.objects.create(leave_type=leave, role=Role.objects.filter(id=id[index]).first(), validity=validity[index])
 
         return Response({"message":"Leave rule created successfully..!!", "status":"success"}, status=status.HTTP_201_CREATED)
@@ -317,7 +318,7 @@ class UpdateLeaveRuleData(APIView):
             leave_rule_data.deleted_at=None
             leave_rule_data.save()
 
-        return Response({"message":"success", "status":"success"}, status=status.HTTP_200_OK)
+        return Response({"message":"Leave rule updated successfully..!!!", "status":"success"}, status=status.HTTP_200_OK)
         # return redirect("LeaveRuleData")
 
 

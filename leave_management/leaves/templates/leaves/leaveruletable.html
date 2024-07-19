@@ -15,13 +15,13 @@
           </td>
           {% endif %}
           <td>
-            <button type="submit" class="btn btn-danger delete" id="{{ rule.id }}">Delete</button>
+            <button type="submit" class="btn btn-danger delete" style="te" id="{{ rule.id }}">Delete</button>
           </td>
           <td>
             {% if rule.status %}
-              <i class="fa-solid fa-toggle-on fa-2x status" id="Td-{{ rule.id }}" style="color:#35ff2a"></i>
+              <i class="fa-solid fa-toggle-on fa-2x status centered" id="Td-{{ rule.id }}" style="color:#35ff2a"></i>
             {% else %}
-              <i class="fa-solid fa-toggle-off fa-2x status" id="Td-{{ rule.id }}"></i>
+              <i class="fa-solid fa-toggle-off fa-2x status centered" id="Td-{{ rule.id }}"></i>
             {% endif %}
           </td>
         </tr>
