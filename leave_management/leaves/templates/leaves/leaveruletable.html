@@ -1,3 +1,4 @@
+{% if data %}
 {% for leave_type_id, rules in data.items %}
       {% for rule in rules %}
         <tr>
@@ -26,3 +27,8 @@
         </tr>
       {% endfor %}
 {% endfor %}
+{% else %}
+<tr>
+    <td colspan="9" class="text-center"><h3 style="color:red">No Data Found</h3></td>
+</tr>
+{% endif %}

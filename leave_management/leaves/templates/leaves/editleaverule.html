@@ -57,7 +57,7 @@
                 </div>
             </div>
             {% endfor %}
-            <button class="btn btn-primary gradient-custom-2" type="submit" id="submit">Update</button>
+        <button class="btn btn-primary gradient-custom-2" type="submit" id="submit" >Update</button>
         </form>
     </center>
 
@@ -66,12 +66,88 @@
     <!-- jQuery Validate -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
-        $("#editeaveRule").validate({
+
+        $(document).ready(function() {
+            $(document).on('submit', '#editeaveRule', function(e) {
+              e.preventDefault();
+              const formData = new FormData(this);
+              var url = `http://127.0.0.1:8000/leave/update-leave-rule-data`;
+              var accessToken = localStorage.getItem('access_token');
+              var refreshToken = localStorage.getItem('refresh_token');
+              fetch(url, {
+                  method: 'POST',
+                  headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Authorization': `Bearer ${refreshToken}`, 
+                    'refresh_token': refreshToken
+                },
+                  body: formData
+              })
+              .then(response => response.json())
+              .then(data => {
+               if(data.status === 'success'){
+                Toastify({
+                    text: data.message,
+                    duration: 3000,
+                           gravity: "top",
+                           position: "right",
+                           stopOnFocus: true,
+                           style: {
+                               width:"300px",
+                               position:"right",
+                               background: "#28a745",
+                               color: "#fff",
+                           },
+                           onClick: function () {},
+                       }).showToast();
+                    $('#editeaveRule')[0].reset();
+                    window.location.href ="http://127.0.0.1:8000/leave/leave-rule-data"
+
+    
+                }else{
+                    Toastify({
+                    text: data.message,
+                    duration: 3000,
+                           gravity: "top",
+                           position: "right",
+                           stopOnFocus: true,
+                           style: {
+                               width:"300px",
+                               position:"right",
+                               background: "red",
+                               color: "#fff",
+                           },
+                           onClick: function () {},
+                       }).showToast();
+                      
+                    }
+                
+                    })
+              .catch(error => {
+                    Toastify({
+                        text: "Something Went Wrong...!!!",
+                        duration: 3000,
+                               gravity: "top",
+                               position: "right",
+                               stopOnFocus: true,
+                               style: {
+                                   width:"300px",
+                                   position:"right",
+                                   background: "red",
+                                   color: "#fff",
+                               },
+                               onClick: function () {},
+                           }).showToast();
+                    
+              });
+            });
+          });
+
+          $("#editeaveRule").validate({
             rules: {
                 "validity[]": {
                     required: true,
                     number: true,
-                    min: 1
                 }
             },
             messages: {
@@ -93,7 +169,7 @@
         $("#submit").click(function() {
             var isValid = true;
             $("input[name='validity[]']").each(function() {
-                if ($(this).val() <= 0) {
+                if ($(this).val() < 0) {
                     $(this).next(".error").remove(); 
                     $(this).after('<label class="error">Please enter a valid number greater than 0</label>'); 
                     isValid = false;

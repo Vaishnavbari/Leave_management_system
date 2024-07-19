@@ -45,14 +45,14 @@ class LeaveTypeView(APIView):
     
     @handle_exceptions()
     def delete(self, request, id):
-        leave_type_data = LeaveType.objects.filter(id=id, status=True, deleted_at__isnull=True)
+        leave_type_data = LeaveType.objects.filter(id=id, deleted_at__isnull=True)
         if not leave_type_data:
             return Response({"message":"leave type not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
         leave_type_data.update(deleted_at=datetime.now(), deleted_by=request.user.id)
         return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
-    @handle_exceptions()
+    # @handle_exceptions()
     def get(self, request, count=None):
         leaveData = LeaveType.objects.filter(deleted_at__isnull=True)
         if count is not None:
@@ -118,16 +118,16 @@ class LeaveRuleView(APIView):
 
     @handle_exceptions()                     
     def delete(self, request, id):
-        leave_rule_data = LeaveRule.objects.filter(id=id, status=True, deleted_at__isnull=True)
+        leave_rule_data = LeaveRule.objects.filter(id=id, deleted_at__isnull=True)
         if not leave_rule_data:
             return Response({"message":"leave rule not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
-        leave_rule_data.update(deleted_at=datetime.now(), deleted_by=request.user.id)
+        leave_rule_data.update(deleted_at=datetime.now(), deleted_by=request.user.id, validity=0)
         return Response({"message":"Leave rule deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
     def get(self, request):
         leavedata = LeaveType.objects.filter(status=True, deleted_at__isnull=True)
-        roledata = Role.objects.filter(status=True, deleted_at__isnull=True)
+        roledata = Role.objects.filter(status=True, deleted_at__isnull=True).exclude(name="admin")
         return render(request, "leaves/leaverule.html", {"data": leavedata, "roledata":roledata})
 
 class LeaveView(APIView):
@@ -135,7 +135,7 @@ class LeaveView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization]
     
-    @handle_exceptions()
+    # @handle_exceptions()
     def post(self, request):
         serializer = LeaveSerializer(data=request.data, context={"user":request.user})
         serializer.is_valid(raise_exception=True)
@@ -156,14 +156,14 @@ class LeaveView(APIView):
 
     @handle_exceptions()                     
     def delete(self, request, id):
-        leave_data = Leave.objects.filter(id=id, deleted_at__isnull=True)
+        leave_data = Leave.objects.filter(id=id, deleted_at__isnull=True, status="1")
         if not leave_data:
-            return Response({"message":"Leave not found", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message":"Leave not found or already action perform on this leave", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
         
         leave_data.update(deleted_at=datetime.now(), deleted_by=request.user.id)
         return Response({"message":"Leave deleted successfully..!!", "status":"success"}, status=status.HTTP_200_OK)
     
-    @handle_exceptions()  
+    # @handle_exceptions()  
     def get(self, request, count=None):
         leavetype_data = LeaveType.objects.filter(status=True, deleted_at__isnull=True)
         leave_data = Leave.objects.filter(deleted_at__isnull=True).order_by("-id")
@@ -291,26 +291,34 @@ class UpdateLeaveRuleData(APIView):
     
     @handle_exceptions()  
     def get(self, request, id):
-        leave_rule_data = LeaveRule.objects.filter(leave_type_id=id, deleted_at__isnull=True)
+        leave_rule_data = LeaveRule.objects.filter(leave_type_id=id)
         if not leave_rule_data:
             return Response({"message": "No data found"}, status=status.HTTP_404_NOT_FOUND)
         return render(request, "leaves/editleaverule.html", {"data":leave_rule_data})
     
-    @handle_exceptions()   
+    # @handle_exceptions()   
     def post(self, request):
         validity = request.data.getlist("validity[]")
         leave_type = request.data.get("leave_type")
         role_id = request.data.getlist("id[]")
         rule_id = request.data.getlist("rule[]")
-
+        
+        for index in range(len(role_id)):
+            if not validity[index]:
+                return Response({"message":"validity field is required", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+            if int(validity[index]) < 0:
+                return Response({"message":"validity field should be greater than 0", "status":"error"}, status=status.HTTP_404_NOT_FOUND)
+            
         for index, id in enumerate(rule_id, start=0):
             leave_rule_data = LeaveRule.objects.filter(id=id).first()
             leave_rule_data.validity = validity[index]
             leave_rule_data.leave_type = LeaveType.objects.filter(id=leave_type).first()
             leave_rule_data.role = Role.objects.filter(id=int(role_id[index])).first()
+            leave_rule_data.deleted_at=None
             leave_rule_data.save()
-            
-        return redirect("LeaveRuleData")
+
+        return Response({"message":"success", "status":"success"}, status=status.HTTP_200_OK)
+        # return redirect("LeaveRuleData")
 
 
 

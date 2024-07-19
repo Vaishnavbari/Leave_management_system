@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import LeaveType, LeaveRule, Leave
 from datetime  import datetime, time
 from rest_framework import status
+from django.db.models import Q
 
 class LeaveTypeSerializer(serializers.ModelSerializer):
     type = serializers.CharField()
@@ -24,7 +25,6 @@ class LeaveTypeSerializer(serializers.ModelSerializer):
         return super().validate(validated_data)
 
     def create(self, validated_data):
-        print("validated", validated_data)
         type = validated_data.get("type")
         leave_type = LeaveType.objects.filter(type=type, deleted_at__isnull=True)
         if leave_type.exists():
@@ -92,6 +92,16 @@ class LeaveSerializer(serializers.ModelSerializer):
     #        date_to = validated_data.get("date_to") if validated_data.get("date_to") else self.instance.date_to
     #        leave_type = validated_data.get("leave_type") if validated_data.get("leave_type") else self.instance.leave_type
     #        reason = validated_data.get("reason") if validated_data.get("reason") else self.instance.reason
+
+
+       # Check User already applied this leave for this date 
+       existing_leaves = Leave.objects.filter(user=user,deleted_at__isnull=True).filter(
+            Q(date_from__lte=date_to) & Q(date_to__gte=date_from)
+        )
+
+       if existing_leaves.exists():
+            raise serializers.ValidationError("Already applied leave for this date range")
+    
          
        if date_from <= datetime.now().date():
            raise serializers.ValidationError("Date-from should be greater than today's date")

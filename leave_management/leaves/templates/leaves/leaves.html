@@ -1,15 +1,21 @@
-{% for i in data %}
+{% if data %}
+    {% for i in data %}
+    <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td id="{{i.id}}">{{ i.leave_type }}</td>
+        <td id="{{i.id}}" name="date_from">{{ i.date_from }}</td>
+        <td id="{{i.id}}" name="date_to">{{ i.date_to }}</td>
+        <td id="{{i.id}}" name="reason">{{ i.reason }}</td>
+        <td id="{{i.id}}" name="status">{{ i.get_status_display }}</td>
+        <td>
+            <button type="submit" class="btn btn-danger delete" id="{{i.id}}">
+                Delete
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+{% else %}
 <tr>
-    <th scope="row">{{ forloop.counter }}</th>
-    <td  id="{{i.id}}" >{{ i.leave_type }}</td>
-    <td id="{{i.id}}"  name="date_from">{{ i.date_from }}</td>
-    <td id="{{i.id}}" name="date_to">{{ i.date_to }}</td>
-    <td id="{{i.id}}" name="reason">{{ i.reason }}</td>
-    <td id="{{i.id}}" name="status">{{ i.get_status_display }}</td>
-    <td>
-        <button type="submit" class="btn btn-danger delete" id="{{i.id}}" >
-            Delete
-        </button>
-    </td>
+    <td colspan="7" class="text-center"><h3 style="color:red">No Data Found</h3></td>
 </tr>
-{% endfor %}
+{% endif %}

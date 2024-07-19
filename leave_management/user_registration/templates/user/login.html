@@ -73,14 +73,14 @@
                     </div>
 
                     <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example11" name="Username" >Username</label>
-                      <input type="text" id="form2Example11" class="form-control" placeholder="Username" name="username"/>
+                      <label class="form-label" for="Username" name="Username" >Username</label>
+                      <input type="text" id="Username" class="form-control" placeholder="Username" name="username"/>
                       <span id="username" style="color:red"></span>
                     </div>
 
                     <div class="form-outline mb-4">
-                      <label class="form-label" for="form2Example22" >password</label>
-                      <input type="password" id="form2Example22" class="form-control" name="password" placeholder="password"  />
+                      <label class="form-label" for="password" >password</label>
+                      <input type="password" id="password" class="form-control" name="password" placeholder="password"  />
                       <span id="password" style="color:red"></span>
                     </div>
 
@@ -89,7 +89,7 @@
 
                     <div class="d-flex align-items-center justify-content-center pb-4">
                       <p class="mb-0 me-2">Don't have an account?</p>
-                      <a href="{% url "Register" %}"> 
+                      <a href="{% url 'Register' %}"> 
                       <button type="button" class="btn btn-outline-danger">Create new </button>
                       </a>
                     </div>
@@ -131,7 +131,6 @@
           $('#errorMessages').html('');
           console.log(data)
           if (data.errors) {
-
               for (const key in data.errors.errors) {
                   if (key === "username") {
                       const usernameError = data.errors.errors.username ? data.errors.errors.username[0] : "";

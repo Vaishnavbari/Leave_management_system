@@ -46,14 +46,14 @@
     </div>
     <div class="form-group" >
       <label for="datefrom">DateFrom:</label>
-      <input type="text" class="form-control" id="datefrom1" placeholder="Enter date" name="date_from">
+      <input type="date" class="form-control" id="datefrom1" placeholder="Enter date" name="date_from">
     <div id="date_from" style="color:red"></div>
 
     </div>
 
     <div class="form-group">
         <label for="datete">DateTo:</label>
-        <input type="text" class="form-control" id="dateto1" placeholder="Enter date" name="date_to">
+        <input type="date" class="form-control" id="dateto1" placeholder="Enter date" name="date_to">
     <div id="date_to" style="color:red"></div>
 
     </div>
@@ -68,23 +68,25 @@
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
 </div>
-<div class="table-responsive" style="margin:2rem">
-    <table class="table table-sm" style="color:black; background-color: white !important;">
-        <thead style="background:none; color:black">
-            <tr style="background:none color:black">
-                <th scope="col">id</th>
-                <th scope="col">Leave Type</th>
-                <th scope="col">Date From</th>
-                <th scope="col">Date To</th>
-                <th scope="col">reason</th>
-                <th scope="col">status</th>
-                <th scope="col">Delete</th>
-            </tr>
-        </thead>
-        <tbody id="genrater">
-            {% include "leaves/leaves.html" %}
-        </tbody>
-    </table>
+<div class="container-fluid" style="margin-top:2rem">
+  <div class="table-responsive">
+      <table class="table table-sm table-bordered" style="color:black; background-color: white; width: 100%;">
+          <thead class="thead-light">
+              <tr>
+                  <th scope="col" style="width: 5%;">ID</th>
+                  <th scope="col" style="width: 5%;">Leave Type</th>
+                  <th scope="col" style="width: 10%;">Date From</th>
+                  <th scope="col" style="width: 10%;">Date To</th>
+                  <th scope="col" style="width: 30%;">Reason</th>
+                  <th scope="col" style="width: 5%;">Status</th>
+                  <th scope="col" style="width: 5%;">Delete</th>
+              </tr>
+          </thead>
+          <tbody id="genrater">
+              {% include "leaves/leaves.html" %}
+          </tbody>
+      </table>
+  </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

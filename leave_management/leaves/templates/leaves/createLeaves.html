@@ -68,22 +68,24 @@
             </div>
         </form>
     </center>
-    <div class="table-responsive" style="margin:2rem">
-        <table class="table table-sm" style="color:black; background-color: white !important;">
-            <thead style="background:none; color:black">
-                <tr style="background:none color:black">
-                    <th scope="col">id</th>
-                    <th scope="col">Leave Type</th>
-                    <th scope="col">Description</th>
-                    <th scope="col">Edit</th>
-                    <th scope="col">Delete</th>
-                    <th scope="col">Status</th>
-                </tr>
-            </thead>
-            <tbody id="genrate">
-                {% include "leaves/leavedata.html" %}
-            </tbody>
-        </table>
+    <div class="container-fluid" style="margin-top: 2rem;">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered col-12" style="color: black; background-color: white;">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col" class="col-1">ID</th>
+                        <th scope="col" class="col-3">Leave Type</th>
+                        <th scope="col" class="col-3">Description</th>
+                        <th scope="col" class="col-1">Edit</th>
+                        <th scope="col" class="col-1">Delete</th>
+                        <th scope="col" class="col-1">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="genrate">
+                    {% include "leaves/leavedata.html" %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -215,20 +217,21 @@
             error: function (xhr, status, error) {
                 if (xhr.status === 400) {
                     Toastify({
-                        text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                        text: xhr.responseJSON.errors.errors.non_field_errors 
+                              ? "Something went Wrong !!!!" 
+                              : "An unexpected error occurred.",
                         duration: 3000,
-                               gravity: "top",
-                               position: "right",
-                               stopOnFocus: true,
-                               style: {
-                                   width:"300px",
-                                   position:"right",
-                                   background: "red",
-                                   color: "#fff",
-                               },
-                               onClick: function () {},
-                           }).showToast();
-                           loadTableData () 
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            width: "300px",
+                            background: "red",
+                            color: "#fff",
+                        },
+                        onClick: function () {},
+                    }).showToast();
+                    
                         }
                 else if (xhr.status === 404){
                     Toastify({
@@ -317,27 +320,26 @@
                              },
                              onClick: function () {},
                          }).showToast();
-                         loacation.reload()
                 }
 
             },
             error: function (xhr, status, error) {
                 if (xhr.status === 400) {
                     Toastify({
-                        text: xhr.responseJSON.errors.errors.non_field_errors[0],
+                        text: xhr.responseJSON.errors.errors.non_field_errors 
+                              ? "Something went Wrong !!!!" 
+                              :"This field is required",
                         duration: 3000,
-                               gravity: "top",
-                               position: "right",
-                               stopOnFocus: true,
-                               style: {
-                                   width:"300px",
-                                   position:"right",
-                                   background: "red",
-                                   color: "#fff",
-                               },
-                               onClick: function () {},
-                           }).showToast();
-                           loadTableData () 
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        style: {
+                            width: "300px",
+                            background: "red",
+                            color: "#fff",
+                        },
+                        onClick: function () {},
+                    }).showToast();
                         }
                 else if (xhr.status === 404){
                     Toastify({

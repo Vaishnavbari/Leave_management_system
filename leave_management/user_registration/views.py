@@ -37,7 +37,7 @@ class UserView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [JWTAuthorization, CheckPermission]
     
-    @handle_exceptions()
+    # @handle_exceptions()
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
